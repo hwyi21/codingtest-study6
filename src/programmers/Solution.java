@@ -1,103 +1,161 @@
 package programmers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+
 public class Solution {
-
-	public static String solution(String p) {
-	        String answer = "";
-	        StringBuilder sb = new StringBuilder();
-	        if(p.isEmpty()) {
-	        	answer= "";
-	        }else {
-	        	sb.append(a(p));
-	        }
-	        answer=sb.toString();
-	        System.out.println(answer);
-	        return answer;
-	    }
-
-	//***** 틀린 문자열인 경우
-	//완벽한 문자열 앞 뒤를 ()게 만든 후 괄호 안에 틀린 문자열 v를 재귀함수로 반복
-	// ( + v + ) 기존에 완벽한 문자열에서 맨앞과 뒤를 뺀 나머지 문자열은 괄호 방향을 바꾸어 ( + v + ) 뒤에 추가 
-	//ex1)  )()()(
-	//1. 완벽한 문자열 )(  v = )()(   =>(+v+) 
-	// 2. 완벽한 문자열 )(  v=")("   =>((+v+ ))
-	//3. ((()))
-	//ex2)  ()))((
-	//1. 완벽한 문자열 () v=))(( =>()+v
-	//2. 완벽한 문자열 ))((  v="" => ()()+나머지 문자열)( 의 괄호 방향을 바꾼 () 
-	public static String a(String p) {
-		int left = 0;
-        int right = 0;
-        
-        StringBuilder sb = new StringBuilder();
-        StringBuilder a = new StringBuilder();
-        
-        
-        for(int i=0; i<p.length(); i++) {
-        	if(p.charAt(i)=='(') {
-        		left++;
-        		sb.append("(");
-        	}else {
-        		right++;
-        		sb.append(")");
-        	}
-        	if(left==right) {
-        		String w = sb.toString();
-        		String v = p.substring(i+1, p.length());
-        		
-        		boolean correct = isCollect(w);
-        		if(v.equals("")&&correct) {
-        			a.append(w);
-        			return a.toString();
-        		}else if(!v.equals("")&&correct) {
-        			a.append(w);
-        			return a+a(v);
-        		}else if(!correct&&!v.equals("")){
-        			a.append("(");
-        			a.append(a(v));
-        			a.append(")");
-        			for(int j=1; j<w.length()-1; j++) {
-        				if(w.charAt(j)=='(') {
-        					a.append(")");
-        				}else if(w.charAt(j)==')'){
-        					a.append("(");
-        				}
-        			}   			
-        			return a.toString();
-        		}else if(!correct&&v.equals("")) {
-        			a.append("(");
-        			a.append(")");
-        			for(int j=1; j<w.length()-1; j++) {
-        				if(w.charAt(j)=='(') {
-        					a.append(")");
-        				}else if(w.charAt(j)==')'){
-        					a.append("(");
-        				}
-        			}   			
-        			return a.toString();
-        		}
-        	}
-        }
-        return a.toString();
+	List<int[]> answer = new ArrayList<int[]>();
+	
+	public Solution() {
+		int[][] build_frame = { { 1, 0, 0, 1 }, { 1, 1, 1, 1 }, { 2, 1, 0, 1 }, { 2, 2, 1, 1 }, { 5, 0, 0, 1 },
+				{ 5, 1, 0, 1 }, { 4, 2, 1, 1 }, { 3, 2, 1, 1 } };
+		solution(5, build_frame);
 	}
 	
-	//올바른 문자열 판단
-	public static boolean isCollect(String w) {
-		int count=0;
-		for(int i=0; i<w.length(); i++) {
-			if(w.charAt(i)=='(') {
-				count++;
-			}else {
-				count--;
+	public int[][] solution(int n, int[][] build_frame) {
+		for (int i = 0; i < build_frame.length; i++) {
+			int x = build_frame[i][0];
+			int y = build_frame[i][1];
+			int a = build_frame[i][2]; // 구조물
+			int b = build_frame[i][3]; // 삭제 / 설치
+
+			if (a == 0) {// 기둥
+				if (b == 1) { // 기둥 설치
+					boolean check = buildP(x, y); // 기둥 설치
+					if(check) {
+						int[] build = {x, y, a};
+						answer.add(new int[] {x,y,a});
+					}
+				}else {// 기둥 삭제
+					del(x,y,a);
+					boolean ch = check();
+					if(!ch) {
+						answer.add(new int[] {x,y,a});
+					}
+				}
+			}else { // 보
+				if(b==1) { //보 설치
+					boolean check = buildB(x, y); // 보 설치
+					if(check) {
+						int[] build = {x, y, a};
+						answer.add(new int[] {x,y,a});
+					}
+				}else {
+					del(x,y,a);
+					boolean ch = check();
+					if(!ch) {
+						answer.add(new int[] {x,y,a});
+					}
+				}
 			}
-			if(count<0) return false;
+		}
+		Collections.sort(answer,new Comparator<int[]>() {
+            @Override
+            public int compare(int[] a, int[] b) {
+                if (a[0] < b[0]) return -1;
+                else if (a[0]== b[0]) {
+                    if (a[1] < b[1]) return -1;
+                    else if (a[1]== b[1]) {
+                        if (a[2] < b[2]) return -1;
+                        else return 1;
+                    }
+                }
+                return 1;
+            }
+        });
+		int[][] result = new int[answer.size()][3];
+		for(int i=0; i<answer.size(); i++) {
+			result[i][0] = answer.get(i)[0];
+			result[i][1] = answer.get(i)[1];
+			result[i][2] = answer.get(i)[2];
+		}
+		return result;
+	}
+
+	public boolean buildP(int x, int y) {
+		if(y==0) {
+			return true;
 		}
 		
+		for(int i=0; i<answer.size();i++) {
+			int x1 = answer.get(i)[0];
+			int y1 = answer.get(i)[1];
+			int a = answer.get(i)[2];
+			if(a==0) { //기둥
+				if(x==x1&&y==y1+1) {
+					return true;
+				}
+			}else {//보
+				if((x==x1&&y==y1)||(x==x1+1&&y==y1)) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean buildB(int x, int y) {
+		int count=0;
+		for(int i=0; i<answer.size();i++) {
+			int x1 = answer.get(i)[0];
+			int y1 = answer.get(i)[1];
+			int a = answer.get(i)[2];
+			if(a==0) { //기둥
+				if((x==x1&&y==y1+1)||(x+1==x1&&y==y1+1)) {
+					return true;
+				}
+			}else {//보
+				if((x==x1+1&&y==y1)||(x+1==x1&&y==y1)) {
+					count++;
+				}
+			}
+		}
+		if(count==2) {
+			return true;
+		}
+		return false;
+	}
+	
+	public void del(int x, int y, int a) {
+		for(int i=0; i<answer.size();i++) {
+			int x1 = answer.get(i)[0];
+			int y1 = answer.get(i)[1];
+			int a1 = answer.get(i)[2];
+			
+			if(x==x1&&y==y1&&a==a1) {
+				answer.remove(i);
+			}
+		}
+	}
+	
+	public boolean check() {
+		for(int i=0; i<answer.size();i++) {
+			int x = answer.get(i)[0];
+			int y = answer.get(i)[1];
+			int a = answer.get(i)[2];
+			if(a==0) {
+				boolean ch = buildP(x,y);
+				if(ch) continue;
+				else {
+					return false;
+				}
+			}else {
+				boolean ch = buildB(x,y);
+				if(ch) continue;
+				else {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 	
 	public static void main(String[] args) {
-		solution(")()()(");
+		new Solution();
 	}
 
 }
