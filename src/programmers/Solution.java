@@ -2,43 +2,70 @@ package programmers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 public class Solution {
 	
 	public Solution() {
-		String[] record = {"Enter uid1234 Muzi", "Enter uid4567 Prodo","Leave uid1234","Enter uid1234 Prodo","Change uid4567 Ryan"};
-		System.out.println(solution(record));
+		int n = 6;
+		int[] arr1 = {46, 33, 33, 22, 31, 50};
+		int[] arr2 = {27, 56, 19, 14, 14, 10};
+		System.out.println(solution(n , arr1, arr2));
 	}
 	
 	/*
-	 * 1. uid숫자를 key / value를 닉네임으로 hashmap 저장
-	 * 2. 문장의 앞글자가 E와 L인 경우 판단
-	 * 3. 문장을 공백을 기준으로 split
-	 * 4. 배열의 두번째 uid숫자를 key로 이용하여 hashmap에 저장되어있는 닉네임 가져오기
+	 * 1. 십진수 -> 2진수로 변환(문자열로 새로운 List에 담기)
+	 * 2. 자릿수 맞추기
+	 * 3. 문자열 비교
+	 * 4. 둘 다 0이면 공백 / 그 외의 #
+	 * 5. 문자열로 저장 후 반환
 	 * */
-	public List solution(String[] record) {
+	public List solution(int n, int[] arr1, int[] arr2) {    
+        List<String> map1 = new ArrayList<String>();
+        List<String> map2 = new ArrayList<String>();
         List answer = new ArrayList();
-        Map<String, String> user = new HashMap<String, String>();
-        
-        for(int i=0; i<record.length; i++) {
-        	String[] temp = record[i].split(" ");
-        	if(temp.length==3) {
-        		user.put(temp[1], temp[2]);
+        for(int i=0; i<n; i++) {
+        	String a = Integer.toBinaryString(arr1[i]);
+        	String b = Integer.toBinaryString(arr2[i]);
+        	
+        	if(a.length()<n) {
+        		String temp="";
+        		int size = a.length();
+        		for(int j=0; j<(n-size); j++) {
+        			temp+="0";
+        		}
+        		temp+=a;
+        		a=temp;
         	}
+        	if(b.length()<n) {
+        		String temp="";
+        		int size = b.length();
+        		for(int j=0; j<(n-size); j++) {
+        			temp+="0";
+        		}
+        		temp+=b;
+        		b=temp;
+        	}
+        	map1.add(a);
+        	map2.add(b);
         }
-        
-        for(int i=0; i<record.length;i++) {
-        	String first = record[i].substring(0,1);
-        	String[] temp = record[i].split(" ");
-        	if(first.equals("E")) {
-        		String result = user.get(temp[1])+"님이 들어왔습니다.";
-        		answer.add(result);
-        	}else if(first.equals("L")) {
-        		String result = user.get(temp[1])+"님이 나갔습니다.";
-        		answer.add(result);
+
+        for(int i=0; i<n; i++) {
+        	String first = map1.get(i);
+        	String second = map2.get(i);
+        	String temp = "";
+        	for(int j=0; j<n;j++) {
+        		String a = first.substring(j, (j+1));
+        		String b = second.substring(j,(j+1));
+        		if(a.equals("0")&&b.equals("0")) {
+        			temp+=" ";
+        		}else {
+        			temp+="#";
+        		}
         	}
+        	answer.add(temp);
         }
         return answer;
     }
